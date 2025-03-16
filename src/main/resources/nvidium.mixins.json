@@ -5,7 +5,7 @@
   "client": [
     "minecraft.MixinBackgroundRenderer",
     "minecraft.MixinGameRenderer",
-    "minecraft.MixinGlBackend",
+    "minecraft.MixinWindow",
     "minecraft.MixinWorldRenderer",
     "sodium.MixinChunkBuilder",
     "sodium.MixinChunkBuilderMeshingTask",

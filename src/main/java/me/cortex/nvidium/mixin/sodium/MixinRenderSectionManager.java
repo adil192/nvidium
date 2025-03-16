@@ -1,8 +1,5 @@
 package me.cortex.nvidium.mixin.sodium;
 
-import com.mojang.blaze3d.opengl.GlConst;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import me.cortex.nvidium.Nvidium;
 import me.cortex.nvidium.NvidiumWorldRenderer;
@@ -22,13 +19,8 @@ import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
 import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
-import net.caffeinemc.mods.sodium.mixin.core.GlCommandEncoderAccessor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.GlBackend;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Fog;
-import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.world.ClientWorld;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
@@ -111,7 +103,7 @@ public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
     }
 
     @Inject(method = "update", at = @At("HEAD"))
-    private void trackViewport(Camera camera, Viewport viewport, Fog fogParameters, boolean spectator, CallbackInfo ci) {
+    private void trackViewport(Camera camera, Viewport viewport, boolean spectator, CallbackInfo ci) {
         this.viewport = viewport;
     }
 
@@ -123,19 +115,11 @@ public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
                 return;
 
             pass.startDrawing();
-
-            Framebuffer target = pass.getTarget();
-            GlStateManager._viewport(0, 0, target.getColorAttachment().getWidth(0), target.getColorAttachment().getHeight(0));
-            GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, ((GlTexture) target.getColorAttachment()).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), target.getDepthAttachment()));
-            ((GlCommandEncoderAccessor) RenderSystem.getDevice().createCommandEncoder()).sodium$applyPipelineState(pass.getPipeline());
-            ((GlCommandEncoderAccessor) RenderSystem.getDevice().createCommandEncoder()).sodium$setLastProgram(null);
-
             if (pass == DefaultTerrainRenderPasses.SOLID) {
                 renderer.renderFrame(viewport, matrices, x, y, z);
             } else if (pass == DefaultTerrainRenderPasses.TRANSLUCENT) {
                 renderer.renderTranslucent();
             }
-
             pass.endDrawing();
         }
     }
@@ -156,7 +140,7 @@ public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
     }
 
     @Inject(method = "createTerrainRenderList", at = @At("HEAD"), cancellable = true)
-    private void redirectTerrainRenderList(Camera camera, Viewport viewport, Fog fogParameters, int frame, boolean spectator, CallbackInfo ci) {
+    private void redirectTerrainRenderList(Camera camera, Viewport viewport, int frame, boolean spectator, CallbackInfo ci) {
         if (Nvidium.IS_ENABLED && Nvidium.config.async_bfs) {
             ci.cancel();
         }

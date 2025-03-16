@@ -1,11 +1,9 @@
 package me.cortex.nvidium.renderers;
 
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.platform.GlStateManager;
 import me.cortex.nvidium.gl.shader.Shader;
 import me.cortex.nvidium.sodiumCompat.ShaderLoader;
 import net.caffeinemc.mods.sodium.client.util.TextureUtil;
-import net.minecraft.client.texture.GlTexture;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.*;
 
@@ -38,11 +36,9 @@ public class TranslucentTerrainRasterizer extends Phase {
         GL45C.glSamplerParameteri(lightSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
-    private static void setTexture(GpuTexture textureId, int bindingPoint) {
-        GlTexture tex = (GlTexture) textureId;
+    private static void setTexture(int textureId, int bindingPoint) {
         GlStateManager._activeTexture(GL32C.GL_TEXTURE0 + bindingPoint);
-        GlStateManager._bindTexture(tex.getGlId());
-        tex.checkDirty();
+        GlStateManager._bindTexture(textureId);
     }
 
     //Translucency is rendered in a very cursed and incorrect way
@@ -50,13 +46,13 @@ public class TranslucentTerrainRasterizer extends Phase {
     public void raster(int regionCount, long commandAddr) {
         shader.bind();
 
-        GlTexture blockTexture = (GlTexture) TextureUtil.getBlockTextureId();
-        GlTexture lightTexture = (GlTexture) TextureUtil.getLightTextureId();
+        int blockId = TextureUtil.getBlockTextureId();
+        int lightId = TextureUtil.getLightTextureId();
 
         GL45C.glBindSampler(0, blockSampler);
         GL45C.glBindSampler(1, lightSampler);
-        setTexture(blockTexture, 0);
-        setTexture(lightTexture, 1);
+        setTexture(blockId, 0);
+        setTexture(lightId, 1);
 
         //the +8*6 is to offset to the unassigned dispatch
         glBufferAddressRangeNV(GL_DRAW_INDIRECT_ADDRESS_NV, 0, commandAddr, regionCount*8L);//Bind the command buffer

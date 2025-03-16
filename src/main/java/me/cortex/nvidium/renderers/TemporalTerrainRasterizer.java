@@ -3,7 +3,6 @@ package me.cortex.nvidium.renderers;
 import me.cortex.nvidium.gl.shader.Shader;
 import me.cortex.nvidium.sodiumCompat.ShaderLoader;
 import net.caffeinemc.mods.sodium.client.util.TextureUtil;
-import net.minecraft.client.texture.GlTexture;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL12C;
 import org.lwjgl.opengl.GL45;
@@ -39,13 +38,13 @@ public class TemporalTerrainRasterizer extends Phase {
     public void raster(int regionCount, long commandAddr) {
         shader.bind();
 
-        GlTexture blockTexture = (GlTexture) TextureUtil.getBlockTextureId();
-        GlTexture lightTexture = (GlTexture) TextureUtil.getLightTextureId();
+        int blockId = TextureUtil.getBlockTextureId();
+        int lightId = TextureUtil.getLightTextureId();
 
-        GL45C.glBindTextureUnit(0, blockTexture.getGlId());
+        GL45C.glBindTextureUnit(0, blockId);
         GL45C.glBindSampler(0, blockSampler);
 
-        GL45C.glBindTextureUnit(1, lightTexture.getGlId());
+        GL45C.glBindTextureUnit(1, lightId);
         GL45C.glBindSampler(1, lightSampler);
 
         glBufferAddressRangeNV(GL_DRAW_INDIRECT_ADDRESS_NV, 0, commandAddr, regionCount*8L);//Bind the command buffer
