@@ -39,7 +39,7 @@ import java.util.Map;
 
 import static me.cortex.nvidium.Nvidium.LOGGER;
 
-@Mixin(value = RenderSectionManager.class, remap = false)
+@Mixin(value = RenderSectionManager.class, remap = false, priority = 1500) // Ensure priority over Iris so it doesn't hijack our ChunkVertexFormat
 public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
     @Shadow @Final private RenderRegionManager regions;
     @Shadow @Final private Long2ReferenceMap<RenderSection> sectionByPosition;
@@ -94,7 +94,7 @@ public class MixinRenderSectionManager implements INvidiumWorldRendererGetter {
     @Redirect(method = "onSectionRemoved", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/RenderSection;delete()V"))
     private void deleteSection(RenderSection section) {
         if (Nvidium.IS_ENABLED) {
-            if (Nvidium.config.region_keep_distance != 32 &&
+            if (Nvidium.config.region_keep_distance == 32 ||
                     Nvidium.config.region_keep_distance <= MinecraftClient.getInstance().options.getClampedViewDistance()) {
                 renderer.deleteSection(section);
             }
